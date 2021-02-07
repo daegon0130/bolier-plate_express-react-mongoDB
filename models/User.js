@@ -10,8 +10,8 @@ const userSchma = mongoose.Schema({
   },
   email: {
     type: String,
-    trim: true,
-    unique: 1,
+    trim: true, // 중간에 space바 없애줌
+    unique: 1,  // unique한 값
   },
   password: {
     type: String,
@@ -34,7 +34,7 @@ const userSchma = mongoose.Schema({
   },
 });
 
-// index.js 의 user.save() 하기 전에 아래 코드를 수행하고 index.js에 저장
+// index.js 의 user.save() 하기 전에 아래 코드를 수행하고 index.js에서 user.save() 수행
 userSchma.pre("save", function(next) {
   let user = this; // userSchema를 가리킴
   // 비밀번호를 암호화 시킨다.
@@ -58,7 +58,7 @@ userSchma.pre("save", function(next) {
 userSchma.methods.comparePassword = function(plainPassword, cb) {
   bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
     if (err) return cb(err);
-    cb(null, isMatch); //match됨. isMatch 가 true
+    else return cb(null, isMatch); //match됨. isMatch 가 true
   });
 };
 
@@ -72,7 +72,7 @@ userSchma.methods.generateToken = function(cb) {
   user.token = token;
   user.save(function(err, user) {
     if (err) return cb(err);
-    cb(null, user);
+    else return cb(null, user);
   });
 };
 
@@ -87,7 +87,7 @@ userSchma.statics.findByToken = function ( token, cb ){
 
     user.findOne({"_id": decoded, "token": token }, function(err, user){
       if(err) return cb(err);
-      cb(null, user)
+      else return cb(null, user);
     })
   })
 }

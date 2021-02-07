@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const config = require("./config/key");
 const { auth } = require('./middleware/auth');
-const { User } = require("./models/User");
+const { User } = require("./models/User"); // User db 모델 가져오기
 
 app.use(cors()); // cors 허용
 
@@ -40,6 +40,7 @@ app.post("/api/users/register", (req, res) => {
 
   const user = new User(req.body); // 인스턴스화
 
+  // user 모델에 저장
   user.save((err, userInfo) => {
     if (err) return res.json({ sucess: false, err }); // 에러 메세지와 함께 return
     return res.status(200).json({
@@ -74,7 +75,7 @@ app.post("/api/users/login", (req, res) => {
 
         // 토큰을 저장한다. 어디에? 쿠키, 로컬 스토리지
         res
-          .cookie("x_auth", user.token)
+          .cookie("x_auth", user.token) // 브라우저에서 쿠키 확인해보면 x_auth라는 이름으로 토큰이 저장됨을 볼 수 있다.
           .status(200)
           .json({ loginSucess: true, userId: user._id });
       });
@@ -83,13 +84,17 @@ app.post("/api/users/login", (req, res) => {
 });
 
 
+// role 1 어드민    role 2 특정 부서 어드민
+// role 0 -> 일반 유저    role 0 이 아니면 관리자
 app.get('/api/users/auth', auth, (req, res)=>{
   // 여기까지 미들웨어를 통과해 있다는 얘기는 Authentication이 True라는 말.
   res.status(200).json({
     _id : req.user._id,
     isAdmin: req.user.role === 0 ? false: true,
     isAuth: true,
-    email: req.user.lastname,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
     role: req.user.role,
     image: req.user.image,
   })
